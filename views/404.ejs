@@ -1,0 +1,3 @@
+<%- include('partials/head', { titolo: '404', descrizione: '' }) %>
+<section class="hero small"><div class="wrap"><h1>404</h1><p class="lead"><%= lingua === 'en' ? 'Page not found.' : 'Pagina non trovata.' %> <a href="<%= PAGINE.home[lingua] %>"><%= t('nav.calc') %></a></p></div></section>
+<%- include('partials/footer') %>

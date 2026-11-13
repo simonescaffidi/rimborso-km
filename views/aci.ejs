@@ -1,0 +1,37 @@
+<%- include('partials/head', { titolo: t('meta.aci.title', { anno: st.anno || '' }), descrizione: t('meta.aci.desc', { anno: st.anno || '' }) }) %>
+<% const ALIM = lingua === 'it'
+  ? { benzina: 'Benzina', gasolio: 'Gasolio', 'gpl-metano': 'GPL/Metano', 'ibrida-benzina': 'Ibrida benzina', 'ibrida-gasolio': 'Ibrida gasolio', 'plug-in': 'Plug-in', elettrica: 'Elettrica' }
+  : { benzina: 'Petrol', gasolio: 'Diesel', 'gpl-metano': 'LPG/CNG', 'ibrida-benzina': 'Petrol hybrid', 'ibrida-gasolio': 'Diesel hybrid', 'plug-in': 'Plug-in', elettrica: 'Electric' }; %>
+<section class="hero small"><div class="wrap">
+  <h1><%= t('acitab.h1', { anno: st.anno || '' }) %></h1>
+  <p class="lead"><%= t('acitab.lead') %></p>
+</div></section>
+<div class="wrap">
+  <form class="card cerca" method="get" role="search">
+    <div><label for="marca"><%= t('acitab.marca') %></label>
+      <select id="marca" name="marca"><option value=""><%= t('acitab.all') %></option>
+      <% marche.forEach(m => { %><option <%= m === marca ? 'selected' : '' %>><%= m %></option><% }) %></select></div>
+    <div class="grow"><label for="q"><%= t('acitab.modello') %></label><input id="q" name="q" type="search" value="<%= q %>" placeholder="<%= t('aci.ph') %>"></div>
+    <button class="btn" type="submit"><%= t('acitab.cerca') %></button>
+  </form>
+  <% if (q || marca) { %>
+  <div class="card tab-wrap">
+    <% if (!risultati.length) { %><p><%= t('acitab.vuoto') %></p><% } else { %>
+    <table class="tab">
+      <thead><tr><th><%= t('acitab.marca') %></th><th><%= t('acitab.modello') %></th><th><%= t('acitab.serie') %></th><th><%= t('acitab.alim') %></th><th class="r"><%= t('acitab.costo') %></th><th></th></tr></thead>
+      <tbody>
+      <% risultati.forEach(v => { const qs = new URLSearchParams({ veicolo: `${v.marca} ${v.modello}${v.serie ? ' ' + v.serie : ''}`, costo: v.costo_km, alim: v.alimentazione }); %>
+        <tr>
+          <td><%= v.marca %></td><td><%= v.modello %></td><td><%= v.serie || '' %><% if (!v.in_produzione) { %> <small class="tag"><%= t('acitab.prod') %></small><% } %></td>
+          <td><%= v.categoria === 'auto' ? ALIM[v.alimentazione] : v.categoria %></td>
+          <td class="r"><strong><%= fmt.euroKm(v.costo_km) %></strong></td>
+          <td><a href="<%= PAGINE.home[lingua] %>?<%= qs %>"><%= t('acitab.usa') %></a></td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+    <% } %>
+  </div>
+  <% } %>
+</div>
+<%- include('partials/footer') %>

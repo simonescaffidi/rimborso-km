@@ -1,0 +1,127 @@
+<%- include('partials/head', { titolo: t('meta.home.title'), descrizione: t('meta.home.desc') }) %>
+<% const it = lingua === 'it';
+   const fuelMap = Object.fromEntries((st.fuel || []).map(f => [f.carburante, f]));
+   const fuelData = st.fuel && st.fuel[0] ? fmt.data(st.fuel[0].giorno) : null; %>
+<script type="application/json" id="i18n"><%- i18nClient %></script>
+<script type="application/json" id="stato"><%- JSON.stringify({ fuel: fuelMap, routes: st.routes, anno: st.anno }).replace(/</g, '\\u003c') %></script>
+
+<section class="hero">
+  <div class="wrap">
+    <h1><%= t('home.h1') %></h1>
+    <p class="lead"><%= t('home.lead') %></p>
+    <ul class="badges">
+      <li><%= st.anno ? t('badge.aci', { anno: st.anno }) : t('badge.aci.none') %></li>
+      <% if (fuelData) { %><li><%= t('badge.fuel', { data: fuelData }) %></li><% } %>
+      <li><%= t('badge.privacy') %></li>
+    </ul>
+  </div>
+</section>
+
+<div class="wrap calc" id="calc">
+  <section class="card" aria-labelledby="s1">
+    <h2 id="s1"><span class="n">1</span><%= t('step1') %></h2>
+    <div class="tabs" role="tablist">
+      <button role="tab" type="button" data-metodo="aci" aria-selected="true"><%= t('m.aci') %></button>
+      <button role="tab" type="button" data-metodo="fisso" aria-selected="false"><%= t('m.fisso') %></button>
+      <button role="tab" type="button" data-metodo="carburante" aria-selected="false"><%= t('m.carb') %></button>
+    </div>
+
+    <div class="pane" data-pane="aci">
+      <label for="aci-q"><%= t('aci.search') %></label>
+      <div class="ac">
+        <input id="aci-q" type="search" autocomplete="off" placeholder="<%= t('aci.ph') %>" aria-controls="aci-list" aria-autocomplete="list">
+        <ul id="aci-list" role="listbox" hidden></ul>
+      </div>
+      <div class="scelto" id="aci-scelto" hidden>
+        <div><strong id="aci-nome"></strong><small id="aci-det"></small></div>
+        <div class="costo"><span id="aci-costo"></span> €/km</div>
+      </div>
+      <p class="hint"><%= t('aci.note') %></p>
+    </div>
+
+    <div class="pane" data-pane="fisso" hidden>
+      <label for="fisso"><%= t('fisso.label') %></label>
+      <input id="fisso" type="number" step="0.0001" min="0" max="10" inputmode="decimal" placeholder="0,30">
+    </div>
+
+    <div class="pane" data-pane="carburante" hidden>
+      <div class="grid3">
+        <div><label for="carb-tipo"><%= t('carb.tipo') %></label>
+          <select id="carb-tipo">
+            <option value="benzina"><%= it ? 'Benzina' : 'Petrol' %></option>
+            <option value="gasolio"><%= it ? 'Gasolio' : 'Diesel' %></option>
+            <option value="gpl">GPL / LPG</option>
+            <option value="metano"><%= it ? 'Metano (€/kg)' : 'CNG (€/kg)' %></option>
+          </select></div>
+        <div><label for="carb-cons"><%= t('carb.consumo') %></label><input id="carb-cons" type="number" step="0.1" min="0" max="50" inputmode="decimal" value="6.5"></div>
+        <div><label for="carb-prezzo"><%= t('carb.prezzo') %></label><input id="carb-prezzo" type="number" step="0.001" min="0" max="10" inputmode="decimal"></div>
+      </div>
+      <% if (fuelData) { %><p class="hint" id="carb-hint"><%= t('carb.auto', { data: fuelData }) %></p><% } %>
+    </div>
+
+    <div class="row-alim">
+      <label for="alim"><%= t('alim') %></label>
+      <select id="alim">
+        <option value="benzina"><%= it ? 'Benzina' : 'Petrol' %></option>
+        <option value="gasolio"><%= it ? 'Gasolio' : 'Diesel' %></option>
+        <option value="gpl-metano"><%= it ? 'GPL / Metano' : 'LPG / CNG' %></option>
+        <option value="ibrida-benzina"><%= it ? 'Ibrida' : 'Hybrid' %></option>
+        <option value="plug-in">Plug-in</option>
+        <option value="elettrica"><%= it ? 'Elettrica' : 'Electric' %></option>
+      </select>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="s2">
+    <h2 id="s2"><span class="n">2</span><%= t('step2') %></h2>
+    <div id="trasferte"></div>
+    <button type="button" class="btn ghost" id="add">+ <%= t('t.add') %></button>
+    <% if (!st.routes) { %><p class="hint warn" id="no-routes"><%= it ? 'Calcolo automatico del percorso momentaneamente non disponibile: inserisci km e pedaggio a mano.' : 'Automatic route calculation temporarily unavailable: enter km and toll manually.' %></p><% } %>
+  </section>
+
+  <section class="card riepilogo" aria-labelledby="s3">
+    <h2 id="s3"><span class="n">3</span><%= t('step3') %></h2>
+    <dl class="tot">
+      <div><dt><%= t('r.tariffa') %></dt><dd id="r-tariffa">–</dd></div>
+      <div><dt><%= t('r.km') %></dt><dd id="r-km">0</dd></div>
+      <div><dt><%= t('r.kmrimb') %></dt><dd id="r-kmrimb">€ 0,00</dd></div>
+      <div><dt><%= t('r.ped') %></dt><dd id="r-ped">€ 0,00</dd></div>
+      <div><dt><%= t('r.extra') %></dt><dd id="r-extra">€ 0,00</dd></div>
+      <div class="big"><dt><%= t('r.tot') %></dt><dd id="r-tot">€ 0,00</dd></div>
+    </dl>
+    <div class="grid2 intest">
+      <div><label for="h-intest"><%= t('h.intest') %></label><input id="h-intest" maxlength="120" autocomplete="name"></div>
+      <div><label for="h-azienda"><%= t('h.azienda') %></label><input id="h-azienda" maxlength="120" autocomplete="organization"></div>
+      <div><label for="h-periodo"><%= t('h.periodo') %></label><input id="h-periodo" maxlength="60" placeholder="<%= it ? 'es. Novembre 2026' : 'e.g. November 2026' %>"></div>
+      <div><label for="h-targa"><%= t('h.targa') %></label><input id="h-targa" maxlength="12"></div>
+    </div>
+    <div class="azioni">
+      <button type="button" class="btn" data-export="pdf"><%= t('exp.pdf') %></button>
+      <button type="button" class="btn alt" data-export="xlsx"><%= t('exp.xlsx') %></button>
+      <button type="button" class="btn ghost" id="reset"><%= t('exp.reset') %></button>
+    </div>
+    <p class="hint" id="msg" role="status" aria-live="polite"></p>
+  </section>
+</div>
+
+<section class="wrap faq">
+  <h2><%= t('faq.h2') %></h2>
+  <% const faq = it ? [
+    ['Come si calcola il rimborso chilometrico con le tabelle ACI?', 'Si moltiplica il costo chilometrico ACI del proprio modello (percorrenza di 15.000 km annui) per i km percorsi per lavoro. Il calcolatore trova il costo per marca e modello e lo applica a ogni trasferta, andata e ritorno compresi.'],
+    ['Le tabelle ACI si aggiornano da sole?', 'Sì. Ogni anno l\'ACI pubblica le nuove tabelle in Gazzetta Ufficiale a dicembre: il sistema controlla ogni giorno il sito ufficiale e importa i nuovi valori appena disponibili. I prezzi dei carburanti si aggiornano ogni mattina dagli open data del Ministero (MIMIT).'],
+    ['Come vengono calcolati i pedaggi autostradali?', 'Il percorso tra partenza e arrivo viene calcolato con Google Maps, che stima il pedaggio reale in base ai caselli attraversati e al tipo di alimentazione. Puoi sempre correggere l\'importo a mano con quello della ricevuta o dell\'estratto Telepass.'],
+    ['Il rimborso chilometrico è tassato?', 'Per i dipendenti in trasferta fuori dal comune della sede di lavoro, il rimborso calcolato con le tabelle ACI non concorre a formare il reddito (art. 51 TUIR), purché documentato. Verifica sempre il caso specifico con il consulente del lavoro o l\'ufficio paghe.'],
+    ['I miei dati vengono salvati?', 'No. Le trasferte restano solo nel tuo browser; il server elabora i dati per creare il PDF o l\'Excel e non li conserva.'],
+  ] : [
+    ['How is mileage reimbursement calculated with ACI tables?', 'Multiply the ACI cost per km of your model (15,000 km per year) by the business kilometres driven. The calculator finds the cost by make and model and applies it to each trip, including return trips.'],
+    ['Do the ACI tables update automatically?', 'Yes. ACI publishes new tables every December in the Italian Official Gazette: the system checks the official website daily and imports the new values as soon as they are available. Fuel prices update every morning from Ministry (MIMIT) open data.'],
+    ['How are motorway tolls calculated?', 'The route is calculated with Google Maps, which estimates the actual toll based on the toll booths crossed and the fuel type. You can always override it with the amount on your receipt or Telepass statement.'],
+    ['Is mileage reimbursement taxed?', 'For Italian employees travelling outside the municipality of their workplace, reimbursement based on ACI tables is not taxable income (art. 51 TUIR) if documented. Always check your specific case with your payroll office.'],
+    ['Is my data stored?', 'No. Your trips stay in your browser only; the server processes the data to create the PDF or Excel file and does not keep it.'],
+  ]; %>
+  <% faq.forEach(([q, a]) => { %><details><summary><%= q %></summary><p><%= a %></p></details><% }) %>
+  <script type="application/ld+json"><%- JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }).replace(/</g, '\\u003c') %></script>
+</section>
+
+<script src="/assets/app.js?v=1" defer></script>
+<%- include('partials/footer') %>

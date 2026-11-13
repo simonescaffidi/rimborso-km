@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="<%= lingua %>" data-ga4="<%= ga4 %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= titolo %></title>
+<meta name="description" content="<%= descrizione %>">
+<% if (noindex) { %><meta name="robots" content="noindex,nofollow"><% } %>
+<% if (gsc) { %><meta name="google-site-verification" content="<%= gsc %>"><% } %>
+<% const P = PAGINE[pagina]; if (P) { %>
+<link rel="canonical" href="<%= PUBLIC_URL + P[lingua] %>">
+<link rel="alternate" hreflang="it" href="<%= PUBLIC_URL + P.it %>">
+<link rel="alternate" hreflang="en" href="<%= PUBLIC_URL + P.en %>">
+<link rel="alternate" hreflang="x-default" href="<%= PUBLIC_URL + P.it %>">
+<% } %>
+<meta property="og:type" content="website">
+<meta property="og:title" content="<%= titolo %>">
+<meta property="og:description" content="<%= descrizione %>">
+<meta property="og:image" content="<%= PUBLIC_URL %>/assets/og.png">
+<meta property="og:locale" content="<%= lingua === 'en' ? 'en_GB' : 'it_IT' %>">
+<meta name="theme-color" content="#0b5d33">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/assets/fonts/titillium-web-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css?v=1">
+<script src="/assets/consent.js?v=1" defer></script>
+</head>
+<body>
+<a class="skip" href="#main"><%= lingua === 'en' ? 'Skip to content' : 'Vai al contenuto' %></a>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="logo" href="<%= PAGINE.home[lingua] %>" aria-label="<%= t('brand') %>">
+      <span class="logo-cippo" aria-hidden="true">km</span><span><%= t('brand') %></span>
+    </a>
+    <nav aria-label="<%= lingua === 'en' ? 'Main' : 'Principale' %>">
+      <a href="<%= PAGINE.home[lingua] %>" <%= pagina === 'home' ? 'aria-current=page' : '' %>><%= t('nav.calc') %></a>
+      <a href="<%= PAGINE.aci[lingua] %>" <%= pagina === 'aci' ? 'aria-current=page' : '' %>><%= t('nav.aci') %></a>
+      <a href="<%= PAGINE.manuale[lingua] %>" <%= pagina === 'manuale' ? 'aria-current=page' : '' %>><%= t('nav.manual') %></a>
+      <% const alt = (PAGINE[pagina] || PAGINE.home)[lingua === 'it' ? 'en' : 'it']; %>
+      <a class="lang" href="<%= alt %>" hreflang="<%= lingua === 'it' ? 'en' : 'it' %>" lang="<%= lingua === 'it' ? 'en' : 'it' %>"><%= lingua === 'it' ? 'EN' : 'IT' %></a>
+    </nav>
+  </div>
+</header>
+<main id="main">

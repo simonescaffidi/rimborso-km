@@ -1,0 +1,55 @@
+<%- include('partials/head', { titolo: t('meta.manual.title'), descrizione: t('meta.manual.desc') }) %>
+<section class="hero small"><div class="wrap"><h1><%= lingua === 'it' ? 'Guida al calcolatore' : 'Calculator guide' %></h1>
+<p class="lead"><%= t('meta.manual.desc') %></p></div></section>
+<article class="wrap prose card">
+<% if (lingua === 'it') { %>
+  <h2>1. Scegli il criterio di rimborso</h2>
+  <ul>
+    <li><strong>Tabelle ACI</strong> (consigliato per i dipendenti): cerca marca e modello e seleziona la versione. Il costo €/km è quello ufficiale ACI per 15.000 km annui<%= st.anno ? ` (tabelle ${st.anno})` : '' %>.</li>
+    <li><strong>Tariffa fissa</strong>: inserisci la tariffa €/km prevista dal tuo regolamento aziendale o dal contratto.</li>
+    <li><strong>Carburante</strong>: consumo medio (l/100 km) × prezzo al litro. Il prezzo viene proposto in automatico con la media nazionale self del giorno (open data MIMIT); puoi modificarlo.</li>
+  </ul>
+  <p>L'<strong>alimentazione</strong> serve a stimare correttamente il pedaggio (alcune tratte prevedono tariffe diverse per veicoli elettrici o ibridi).</p>
+  <h2>2. Inserisci le trasferte</h2>
+  <ul>
+    <li>Scrivi partenza e arrivo (città o indirizzo) e premi <em>Calcola km e pedaggio</em>: distanza e pedaggio vengono calcolati sul percorso più rapido. Con <em>Evita autostrade</em> il pedaggio è zero.</li>
+    <li><em>Andata e ritorno</em> raddoppia km e pedaggio della trasferta.</li>
+    <li>Km e pedaggio si possono sempre correggere a mano (per esempio con l'importo della ricevuta o dell'estratto Telepass).</li>
+    <li>Parcheggio, vitto, alloggio e altro vanno inseriti come importi totali della trasferta.</li>
+    <li>Con <em>Aggiungi trasferta</em> crei una nuova riga che parte dall'ultima partenza usata.</li>
+  </ul>
+  <h2>3. Scarica la nota spese</h2>
+  <p>Compila intestatario, azienda, periodo e targa, poi scarica il <strong>PDF</strong> (pronto da firmare) o il file <strong>Excel</strong> (con le formule dei totali). I dati restano salvati solo nel tuo browser finché non premi <em>Svuota tutto</em>.</p>
+  <h2>Aggiornamenti automatici</h2>
+  <ul>
+    <li><strong>Tabelle ACI</strong>: il sistema controlla ogni giorno il sito ufficiale ACI e importa le nuove tabelle appena pubblicate (di norma a dicembre, valide dal 1° gennaio).</li>
+    <li><strong>Prezzi carburanti</strong>: aggiornati ogni mattina dagli open data del Ministero delle Imprese e del Made in Italy.</li>
+    <li><strong>Pedaggi</strong>: calcolati al momento con Google Maps, quindi sempre allineati alle tariffe in vigore.</li>
+  </ul>
+  <p>Cerchi solo il costo chilometrico? Usa la pagina <a href="<%= PAGINE.aci.it %>">Tabelle ACI</a> e premi <em>Usa nel calcolatore</em>.</p>
+<% } else { %>
+  <h2>1. Choose the reimbursement criterion</h2>
+  <ul>
+    <li><strong>ACI tables</strong> (recommended for employees in Italy): search make and model and select the version. The €/km cost is the official ACI value for 15,000 km per year<%= st.anno ? ` (${st.anno} tables)` : '' %>.</li>
+    <li><strong>Fixed rate</strong>: enter the €/km rate set by your company policy or contract.</li>
+    <li><strong>Fuel</strong>: average consumption (l/100 km) × price per litre. The price is pre-filled with today's national self-service average (MIMIT open data); you can change it.</li>
+  </ul>
+  <p>The <strong>fuel type</strong> is used to estimate tolls correctly.</p>
+  <h2>2. Enter your trips</h2>
+  <ul>
+    <li>Type origin and destination (city or address) and press <em>Calculate km and toll</em>: distance and toll are calculated on the fastest route. With <em>Avoid motorways</em> the toll is zero.</li>
+    <li><em>Return trip</em> doubles the trip's km and toll.</li>
+    <li>Km and toll can always be edited manually (e.g. with the amount on your receipt or Telepass statement).</li>
+    <li>Parking, meals, lodging and other are total amounts for the trip.</li>
+  </ul>
+  <h2>3. Download the expense report</h2>
+  <p>Fill in employee, company, period and plate, then download the <strong>PDF</strong> (ready to sign) or the <strong>Excel</strong> file (with total formulas). Data is kept only in your browser until you press <em>Clear all</em>.</p>
+  <h2>Automatic updates</h2>
+  <ul>
+    <li><strong>ACI tables</strong>: checked daily on the official ACI website and imported as soon as they are published (usually in December, valid from 1 January).</li>
+    <li><strong>Fuel prices</strong>: updated every morning from Italian Ministry open data.</li>
+    <li><strong>Tolls</strong>: calculated live with Google Maps, always in line with current rates.</li>
+  </ul>
+<% } %>
+</article>
+<%- include('partials/footer') %>
