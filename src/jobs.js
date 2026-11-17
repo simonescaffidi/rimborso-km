@@ -16,10 +16,10 @@ function anniDaControllare(oggi = new Date()) {
   return m >= 11 ? [y, y + 1] : [y];
 }
 
-async function jobAci() {
+async function jobAci({ forza = false } = {}) {
   const anni = anniDaControllare();
   const esiti = [];
-  for (const anno of anni) esiti.push(await aci.aggiornaAnno(anno));
+  for (const anno of anni) esiti.push(await aci.aggiornaAnno(anno, { forza }));
   const corrente = esiti[0];
   const testo = JSON.stringify(esiti);
   const importate = esiti.some((e) => e.importate.length);

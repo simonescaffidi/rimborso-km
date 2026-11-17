@@ -163,7 +163,7 @@ const limiteAdmin = rateLimit({ windowMs: 3600_000, limit: 20 });
 app.use('/admin', limiteAdmin, (req, res, next) => (tokenOk(req) ? next() : res.status(401).end()));
 app.post('/admin/alert-test', async (req, res) => res.json(await alert(`test-${Date.now()}`, new Error('Prova manuale del sistema di alert (nessun problema reale)'))));
 app.post('/admin/aggiorna/:job', async (req, res) => {
-  if (req.params.job === 'aci') return res.json(await jobs.jobAci());
+  if (req.params.job === 'aci') return res.json(await jobs.jobAci({ forza: req.query.forza === '1' }));
   if (req.params.job === 'carburanti') return res.json(await jobs.jobCarburanti());
   res.status(404).end();
 });

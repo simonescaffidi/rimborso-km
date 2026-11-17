@@ -62,7 +62,8 @@ function trovaColonne(ws) {
     const n = Math.max(row.cellCount, next.cellCount, 1);
     for (let c = 1; c <= n; c++) heads[c] = `${norm(testoCella(row.getCell(c)))} ${norm(testoCella(next.getCell(c)))}`.trim().toLowerCase();
     const marca = heads.findIndex((h) => h && /^marca\b|\bmarca\b/.test(h));
-    const modello = heads.findIndex((h) => h && /modello/.test(h));
+    // "Modello" vero, non "ID Modello"/"Cod. modello" (codici numerici ACI)
+    const modello = [heads.findIndex((h) => h && /^modello\b/.test(h)), heads.findIndex((h) => h && /modello/.test(h) && !/\b(id|cod)/.test(h))].find((i) => i > 0) ?? -1;
     if (marca < 1 || modello < 1) continue;
     const serie = heads.findIndex((h) => h && /serie|versione|allestimento/.test(h));
     const costi = heads.map((h, i) => (h && /costo/.test(h) && !/fringe|benefit/.test(h) ? i : -1)).filter((i) => i > 0);

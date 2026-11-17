@@ -24,6 +24,21 @@ test('ACI: intestazione con titolo, colonna costo km 15.000 e fringe benefit', a
   assert.deepStrictEqual(r[1], { marca: 'FIAT', modello: 'Panda 1.2 69cv', serie: 'Easy', costoKm: 0.4512 });
 });
 
+test('ACI: layout ufficiale 2026 con colonna ID Modello', async () => {
+  const buf = await xlsx([
+    ['ID Modello', 'Marca', 'Modello', 'COSTO KM 15.000 KM', 'FRINGE BENEFIT ANNUALE (25% CK)', 'FRINGE BENEFIT ANNUALE (30% CK)'],
+    ['CICLOMOTORI'],
+    ['23383', 'ALFA ROMEO', 'GIULIA 2.0 TURBO Q4 VELOCE 280CV AWD', '0.9011', '3379.125', '4054.95'],
+    ['29925', 'ALPINE', 'A110 1.8 250CV', '0.8537', '3201.375', '3841.65'],
+    ['31398', 'AUDI', 'A1 ALLSTREET 30 TFSI 1.0 116 CV', '0.5397', '2023.87', '2428.64'],
+    ['31206', 'AUDI', 'A1 SPB 30 1.0 116CV', '0.5181', '1942.87', '2331.45'],
+    ['10459', 'APRILIA', 'SCARABEO 50 4T', '0.1678', '251.7', '629.25'],
+  ]);
+  const r = await aci.parse(buf);
+  assert.strictEqual(r.length, 5);
+  assert.deepStrictEqual(r[0], { marca: 'ALFA ROMEO', modello: 'GIULIA 2.0 TURBO Q4 VELOCE 280CV AWD', serie: null, costoKm: 0.9011 });
+});
+
 test('ACI: URL candidati con anno', () => {
   const u = aci.urlCandidati('Autoveicoli-BZ-IN', 2027);
   assert.ok(u[0].endsWith('/2026/12/Autoveicoli-BZ-IN-2027.xlsx'));
