@@ -167,6 +167,7 @@ app.post('/admin/aggiorna/:job', async (req, res) => {
   if (req.params.job === 'carburanti') return res.json(await jobs.jobCarburanti());
   res.status(404).end();
 });
+app.get('/admin/aci-anteprima/:anno/:tabella', async (req, res) => res.json(await aci.anteprima(req.params.tabella, Number(req.params.anno), Math.min(Number(req.query.righe) || 8, 40))));
 // fallback: upload manuale di un file ACI (body = xlsx)
 app.post('/admin/aci/:anno/:tabella', express.raw({ type: '*/*', limit: '15mb' }), async (req, res) => {
   const n = await aci.importaFile(Number(req.params.anno), req.params.tabella, req.body);

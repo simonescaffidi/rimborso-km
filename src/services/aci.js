@@ -168,9 +168,22 @@ async function importaFile(anno, nomeTabella, buffer, url = 'upload manuale') {
   return righe.length;
 }
 
+// Diagnostica: prime righe grezze del file ufficiale (per adeguare il parser se ACI cambia formato)
+async function anteprima(nome, anno, righe = 8) {
+  for (const url of urlCandidati(nome, anno)) {
+    const buf = await scarica(url);
+    if (!buf) continue;
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(buf);
+    return { url, fogli: wb.worksheets.map((ws) => ({ nome: ws.name, righe: ws.rowCount,
+      anteprima: Array.from({ length: Math.min(righe, ws.rowCount) }, (_, i) => ws.getRow(i + 1).values.slice(1).map((c) => testoCella({ value: c }))) })) };
+  }
+  return null;
+}
+
 async function annoCorrenteDati() {
   const { rows: [r] } = await db.query('SELECT max(anno) AS anno FROM aci_import');
   return r.anno ? Number(r.anno) : null;
 }
 
-module.exports = { TABELLE, urlCandidati, parse, trovaColonne, aggiornaAnno, importaFile, annoCorrenteDati };
+module.exports = { anteprima, TABELLE, urlCandidati, parse, trovaColonne, aggiornaAnno, importaFile, annoCorrenteDati };
