@@ -26,9 +26,54 @@
     }
   } catch (e) { /* URL non supportato */ }
 
+  // ---------- nota spese salvata (utente registrato) ----------
+  var NOTA = null;          // { id, titolo, aziendaId } se il calcolatore è collegato a una nota
+  var CSRF = (document.querySelector('meta[name=csrf-token]') || {}).content || '';
+  try { var nq = new URL(location.href).searchParams.get('nota'); if (ST.utente && /^\d+$/.test(nq || '')) NOTA = { id: Number(nq) }; } catch (e) { /* ignora */ }
+  function api(metodo, url, body) {
+    return fetch(url, { method: metodo, headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF }, body: body ? JSON.stringify(body) : undefined, credentials: 'same-origin' })
+      .then(function (r) { if (r.status === 401) { location.href = ST.accedi + '?r=' + encodeURIComponent(location.pathname + location.search); throw new Error('login'); } if (!r.ok) throw new Error(r.status); return r.json(); });
+  }
+  function daNota(n) {
+    var m = n.metodo || { tipo: 'aci', costoKm: 0 };
+    var s = {
+      metodo: m.tipo || 'aci', aci: null, fisso: '', carb: { tipo: 'benzina', consumo: 6.5, prezzo: '' }, alim: n.alimentazione || 'benzina',
+      intest: n.intestatario || '', azienda: n.azienda || '', periodo: n.titolo || '', targa: n.targa || '',
+      trasferte: (n.trasferte && n.trasferte.length ? n.trasferte : [nuova()]).map(function (t) {
+        var o = {}; for (var k in t) o[k] = t[k];
+        ['km', 'pedaggio', 'parcheggio', 'vitto', 'alloggio', 'altro'].forEach(function (k) { if (!Number(o[k])) o[k] = ''; });
+        return o;
+      }),
+    };
+    if (m.tipo === 'aci' && m.costoKm) s.aci = { nome: m.veicolo || '', det: '', costo: Number(m.costoKm) };
+    if (m.tipo === 'fisso') s.fisso = m.costoKm;
+    if (m.tipo === 'carburante') s.carb = { tipo: m.carburante || 'benzina', consumo: m.consumo, prezzo: m.prezzo, prezzoManuale: true };
+    return s;
+  }
+  var tSalva, statoNb = document.getElementById('nb-stato');
+  function salvaNota() {
+    clearTimeout(tSalva);
+    if (statoNb) statoNb.textContent = I['n.bar.salvando'];
+    tSalva = setTimeout(function () {
+      api('PUT', '/api/u/note/' + NOTA.id, { payload: payload(), titolo: NOTA.titolo, aziendaId: NOTA.aziendaId })
+        .then(function () { if (statoNb) { statoNb.textContent = '✓ ' + I['n.bar.salvato']; statoNb.classList.remove('err'); } })
+        .catch(function (e) { if (statoNb && e.message !== 'login') { statoNb.textContent = I['n.bar.errore']; statoNb.classList.add('err'); } });
+    }, 700);
+  }
+  function riempiAziende(aziende) {
+    ['nb-az', 'sn-az'].forEach(function (idSel) {
+      var sel = document.getElementById(idSel); if (!sel) return;
+      aziende.forEach(function (a) { var o = document.createElement('option'); o.value = a.id; o.textContent = a.nome; sel.appendChild(o); });
+    });
+  }
+
   function nuova() { return { data: oggi(), partenza: '', arrivo: '', motivo: '', km: '', andataRitorno: true, pedaggio: '', parcheggio: '', vitto: '', alloggio: '', altro: '', evita: false }; }
   function carica() { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } }
-  function salva() { try { localStorage.setItem(KEY, JSON.stringify(stato)); } catch (e) { /* storage non disponibile */ } }
+  function salva() {
+    if (NOTA && NOTA.caricata) return salvaNota();
+    if (NOTA) return;
+    try { localStorage.setItem(KEY, JSON.stringify(stato)); } catch (e) { /* storage non disponibile */ }
+  }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function n(v) { var x = Number(String(v).replace(',', '.')); return isFinite(x) && x > 0 ? x : 0; }
   function msg(t, err) { var m = $('#msg'); m.textContent = t || ''; m.classList.toggle('err', !!err); }
@@ -166,9 +211,9 @@
     else if (stato.metodo === 'fisso') m = { tipo: 'fisso', costoKm: n(stato.fisso) };
     else m = { tipo: 'carburante', consumo: n(stato.carb.consumo), prezzo: n(stato.carb.prezzo), carburante: stato.carb.tipo };
     return {
-      intestatario: stato.intest, azienda: stato.azienda, periodo: stato.periodo, targa: stato.targa, metodo: m,
+      intestatario: stato.intest, azienda: stato.azienda, periodo: stato.periodo, targa: stato.targa, metodo: m, alimentazione: stato.alim,
       trasferte: stato.trasferte.map(function (t) {
-        return { data: t.data, partenza: t.partenza, arrivo: t.arrivo, motivo: t.motivo, km: n(t.km), andataRitorno: !!t.andataRitorno,
+        return { data: t.data, partenza: t.partenza, arrivo: t.arrivo, motivo: t.motivo, km: n(t.km), andataRitorno: !!t.andataRitorno, evita: !!t.evita,
           pedaggio: n(t.pedaggio), parcheggio: n(t.parcheggio), vitto: n(t.vitto), alloggio: n(t.alloggio), altro: n(t.altro) };
       }),
     };
@@ -216,10 +261,47 @@
   });
 
   // ---------- avvio ----------
-  $('#fisso').value = stato.fisso || '';
-  $('#carb-tipo').value = stato.carb.tipo; $('#carb-cons').value = stato.carb.consumo; $('#carb-prezzo').value = stato.carb.prezzo;
-  if (!stato.carb.prezzoManuale) prezzoAuto();
-  $('#alim').value = stato.alim;
-  $('#h-intest').value = stato.intest || ''; $('#h-azienda').value = stato.azienda || ''; $('#h-periodo').value = stato.periodo || ''; $('#h-targa').value = stato.targa || '';
-  mostraMetodo(); mostraAci(); disegnaTrasferte(); aggiorna();
+  function avvia() {
+    $('#fisso').value = stato.fisso || '';
+    $('#carb-tipo').value = stato.carb.tipo; $('#carb-cons').value = stato.carb.consumo; $('#carb-prezzo').value = stato.carb.prezzo;
+    if (!stato.carb.prezzoManuale) prezzoAuto();
+    $('#alim').value = stato.alim;
+    $('#h-intest').value = stato.intest || ''; $('#h-azienda').value = stato.azienda || ''; $('#h-periodo').value = stato.periodo || ''; $('#h-targa').value = stato.targa || '';
+    mostraMetodo(); mostraAci(); disegnaTrasferte(); aggiorna();
+  }
+
+  if (!ST.utente) return avvia();
+
+  api('GET', '/api/u/me').then(function (me) {
+    riempiAziende(me.aziende);
+    var nomeAz = function (id) { var a = me.aziende.filter(function (x) { return String(x.id) === String(id); })[0]; return a ? a.nome : ''; };
+    if (!NOTA) {
+      if (!stato.intest) stato.intest = me.utente.nome;
+      avvia();
+      var btn = document.getElementById('sn-btn');
+      if (btn) btn.addEventListener('click', function () {
+        var az = $('#sn-az').value;
+        btn.disabled = true;
+        api('POST', '/api/u/note', { titolo: $('#sn-titolo').value || stato.periodo, aziendaId: az || null, payload: Object.assign(payload(), { azienda: nomeAz(az) || stato.azienda }) })
+          .then(function (r) { location.href = location.pathname + '?nota=' + r.id; })
+          .catch(function () { btn.disabled = false; msg(LANG === 'en' ? 'Saving failed.' : 'Salvataggio non riuscito.', true); });
+      });
+      return;
+    }
+    return api('GET', '/api/u/note/' + NOTA.id).then(function (n) {
+      NOTA = { id: n.id, titolo: n.titolo, aziendaId: n.aziendaId, caricata: false };
+      stato = daNota(n);
+      var bar = document.getElementById('notabar'); bar.hidden = false;
+      var sn = document.getElementById('salva-nota'); if (sn) sn.hidden = true;
+      var tit = $('#nb-titolo'), azSel = $('#nb-az');
+      tit.value = n.titolo; azSel.value = n.aziendaId || '';
+      $('#h-azienda').readOnly = true; $('#h-periodo').readOnly = true;
+      tit.addEventListener('input', function () { NOTA.titolo = tit.value; stato.periodo = tit.value; $('#h-periodo').value = tit.value; salva(); });
+      azSel.addEventListener('change', function () { NOTA.aziendaId = azSel.value || null; stato.azienda = nomeAz(azSel.value); $('#h-azienda').value = stato.azienda; salva(); });
+      document.title = n.titolo + ' | Rimborso Km';
+      avvia();
+      NOTA.caricata = true;
+      if (statoNb) statoNb.textContent = '✓ ' + I['n.bar.salvato'];
+    });
+  }).catch(function (e) { if (e.message !== 'login') { NOTA = null; avvia(); msg(LANG === 'en' ? 'Report not found.' : 'Nota spese non trovata.', true); } });
 })();

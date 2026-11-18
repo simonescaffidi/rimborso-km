@@ -1,0 +1,5 @@
+<nav class="subnav wrap" aria-label="<%= t('nav.area') %>">
+  <a href="<%= PAGINE.area[lingua] %>" <%= pagina === 'area' ? 'aria-current=page' : '' %>><%= t('nav.area') %></a>
+  <a href="<%= PAGINE.aziende[lingua] %>" <%= pagina === 'aziende' ? 'aria-current=page' : '' %>><%= t('nav.aziende') %></a>
+  <a href="<%= PAGINE.account[lingua] %>" <%= pagina === 'account' ? 'aria-current=page' : '' %>><%= t('nav.account') %></a>
+</nav>

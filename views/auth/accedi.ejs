@@ -1,0 +1,15 @@
+<%- include('../partials/head', { titolo: t('a.accedi.h1') + ' | Rimborso Km', descrizione: t('a.accedi.lead') }) %>
+<section class="hero small"><div class="wrap"><h1><%= t('a.accedi.h1') %></h1><p class="lead"><%= t('a.accedi.lead') %></p></div></section>
+<div class="wrap">
+  <form class="card auth" method="post" action="<%= PAGINE.accedi[lingua] %>">
+    <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="r" value="<%= r %>">
+    <% if (info) { %><p class="alert ok" role="status"><%= t(info) %></p><% } %>
+    <% if (errore) { %><p class="alert err" role="alert"><%= t('a.err.' + errore) %></p><% } %>
+    <label for="email"><%= t('a.email') %></label><input id="email" name="email" type="email" required autocomplete="email" value="<%= email %>">
+    <label for="password"><%= t('a.password') %></label><input id="password" name="password" type="password" required autocomplete="current-password">
+    <button class="btn" type="submit"><%= t('a.entra') %></button>
+    <p class="hint"><a href="<%= PAGINE.recupero[lingua] %>"><%= t('a.dimenticata') %></a></p>
+    <p class="hint"><%= t('a.nuovo') %> <a href="<%= PAGINE.registrati[lingua] %>"><%= t('a.crea') %></a></p>
+  </form>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,78 @@
+<%- include('../partials/head', { titolo: t('area.h1') + ' | Rimborso Km', descrizione: t('area.h1') }) %>
+<% const home = lingua === 'en' ? '/en/' : '/'; const eur = (c) => fmt.euro(c); %>
+<section class="hero small"><div class="wrap"><h1><%= t('area.h1') %></h1></div></section>
+<%- include('_nav') %>
+<div class="wrap area">
+  <% if (benvenuto) { %><p class="alert ok"><%= t('area.benvenuto') %> <a href="<%= PAGINE.aziende[lingua] %>"><%= t('az.aggiungi') %></a></p><% } %>
+
+  <form class="card nuova" method="post" action="<%= PAGINE.area[lingua] %>/note">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h2><%= t('area.nuova') %></h2>
+    <div class="grid3">
+      <div><label for="n-titolo"><%= t('area.titolo') %></label><input id="n-titolo" name="titolo" maxlength="120" required placeholder="<%= t('area.titolo.ph') %>"></div>
+      <div><label for="n-az"><%= t('area.azienda') %></label>
+        <select id="n-az" name="azienda_id"><option value=""><%= t('area.nessuna') %></option>
+        <% aziende.forEach(a => { %><option value="<%= a.id %>" <%= String(filtri.azienda) === String(a.id) ? 'selected' : '' %>><%= a.nome %></option><% }) %></select>
+        <% if (!aziende.length) { %><p class="hint"><a href="<%= PAGINE.aziende[lingua] %>"><%= t('az.aggiungi') %></a></p><% } %>
+      </div>
+      <div class="end"><button class="btn" type="submit"><%= t('area.crea') %></button></div>
+    </div>
+  </form>
+
+  <form class="card filtri" method="get" action="<%= PAGINE.area[lingua] %>">
+    <div><label for="f-az"><%= t('area.azienda') %></label><select id="f-az" name="azienda"><option value=""><%= t('area.tutte') %></option>
+      <% aziende.forEach(a => { %><option value="<%= a.id %>" <%= String(filtri.azienda) === String(a.id) ? 'selected' : '' %>><%= a.nome %></option><% }) %></select></div>
+    <div><label for="f-anno"><%= t('area.anno') %></label><select id="f-anno" name="anno"><option value=""><%= t('area.tutte') %></option>
+      <% anni.forEach(a => { %><option <%= String(filtri.anno) === String(a) ? 'selected' : '' %>><%= a %></option><% }) %></select></div>
+    <div><label for="f-stato"><%= t('area.stato') %></label><select id="f-stato" name="stato"><option value=""><%= t('area.tutte') %></option>
+      <% ['bozza','inviata','rimborsata'].forEach(s => { %><option value="<%= s %>" <%= filtri.stato === s ? 'selected' : '' %>><%= t('stato.' + s) %></option><% }) %></select></div>
+    <button class="btn alt" type="submit"><%= t('area.filtra') %></button>
+  </form>
+
+  <div class="card tab-wrap">
+  <% if (!elenco.length) { %><p><%= t('area.vuoto') %></p><% } else { %>
+    <table class="tab note">
+      <thead><tr><th><%= t('area.col.nota') %></th><th><%= t('area.azienda') %></th><th class="r"><%= t('area.col.trasferte') %></th><th class="r"><%= t('area.col.km') %></th><th class="r"><%= t('area.col.totale') %></th><th><%= t('area.stato') %></th><th></th></tr></thead>
+      <tbody>
+      <% elenco.forEach(n => { %>
+        <tr>
+          <td><a href="<%= home %>?nota=<%= n.id %>"><strong><%= n.titolo %></strong></a><% if (n.data_inizio) { %><br><small><%= fmt.data(n.data_inizio) %></small><% } %></td>
+          <td><%= n.azienda || '—' %></td>
+          <td class="r"><%= n.trasferte %></td>
+          <td class="r"><%= n.km.toLocaleString('it-IT') %></td>
+          <td class="r"><strong><%= eur(n.totale) %></strong></td>
+          <td>
+            <form method="post" action="<%= PAGINE.area[lingua] %>/note/<%= n.id %>/stato" class="inline">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <select name="stato" class="stato s-<%= n.stato %>" data-autosubmit aria-label="<%= t('area.stato') %>">
+                <% ['bozza','inviata','rimborsata'].forEach(s => { %><option value="<%= s %>" <%= n.stato === s ? 'selected' : '' %>><%= t('stato.' + s) %></option><% }) %>
+              </select>
+              <noscript><button type="submit">OK</button></noscript>
+            </form>
+          </td>
+          <td class="azioni-riga">
+            <a class="btn small" href="<%= home %>?nota=<%= n.id %>"><%= t('area.apri') %></a>
+            <form method="post" action="<%= PAGINE.area[lingua] %>/note/<%= n.id %>/duplica" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="link neutro" type="submit"><%= t('area.duplica') %></button></form>
+            <form method="post" action="<%= PAGINE.area[lingua] %>/note/<%= n.id %>/elimina" class="inline" data-conferma="<%= t('area.elimina.conf') %>"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="link" type="submit"><%= t('area.elimina') %></button></form>
+          </td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+  </div>
+
+  <% if (riepilogo.length) { %>
+  <section class="card tab-wrap">
+    <h2><%= t('area.storico') %></h2>
+    <table class="tab">
+      <thead><tr><th><%= t('area.anno') %></th><th><%= t('area.azienda') %></th><th class="r"><%= t('area.col.note') %></th><th class="r"><%= t('area.col.km') %></th><th class="r"><%= t('area.col.totale') %></th><th class="r"><%= t('area.col.rimborsato') %></th></tr></thead>
+      <tbody>
+      <% riepilogo.forEach(x => { %><tr><td><%= x.anno %></td><td><%= x.azienda || t('area.senzaazienda') %></td><td class="r"><%= x.note %></td><td class="r"><%= Number(x.km).toLocaleString('it-IT') %></td><td class="r"><strong><%= eur(x.totale) %></strong></td><td class="r"><%= eur(x.rimborsato) %></td></tr><% }) %>
+      </tbody>
+    </table>
+  </section>
+  <% } %>
+</div>
+<script src="/assets/area.js?v=1" defer></script>
+<%- include('../partials/footer') %>

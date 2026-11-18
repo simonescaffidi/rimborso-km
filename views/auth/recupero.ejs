@@ -1,0 +1,13 @@
+<%- include('../partials/head', { titolo: t('a.rec.h1') + ' | Rimborso Km', descrizione: t('a.rec.lead') }) %>
+<section class="hero small"><div class="wrap"><h1><%= t('a.rec.h1') %></h1><p class="lead"><%= t('a.rec.lead') %></p></div></section>
+<div class="wrap">
+  <form class="card auth" method="post" action="<%= PAGINE.recupero[lingua] %>">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <% if (inviato) { %><p class="alert ok" role="status"><%= t('a.rec.ok') %></p><% } %>
+    <% if (errore) { %><p class="alert err" role="alert"><%= t('a.err.' + errore) %></p><% } %>
+    <label for="email"><%= t('a.email') %></label><input id="email" name="email" type="email" required autocomplete="email">
+    <button class="btn" type="submit"><%= t('a.rec.btn') %></button>
+    <p class="hint"><a href="<%= PAGINE.accedi[lingua] %>"><%= t('a.entra') %></a></p>
+  </form>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,36 @@
+<%- include('../partials/head', { titolo: t('az.h1') + ' | Rimborso Km', descrizione: t('az.lead') }) %>
+<section class="hero small"><div class="wrap"><h1><%= t('az.h1') %></h1><p class="lead"><%= t('az.lead') %></p></div></section>
+<%- include('_nav') %>
+<div class="wrap area">
+  <% if (errore) { %><p class="alert err"><%= t('a.err.dati') %></p><% } %>
+  <form class="card" method="post" action="<%= PAGINE.aziende[lingua] %>">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h2><%= t('az.aggiungi') %></h2>
+    <div class="grid2">
+      <div><label for="az-nome"><%= t('az.nome') %></label><input id="az-nome" name="nome" required maxlength="120"></div>
+      <div><label for="az-piva"><%= t('az.piva') %></label><input id="az-piva" name="piva" maxlength="20"></div>
+      <div><label for="az-ind"><%= t('az.indirizzo') %></label><input id="az-ind" name="indirizzo" maxlength="200"></div>
+      <div><label for="az-note"><%= t('az.note') %></label><input id="az-note" name="note" maxlength="500"></div>
+    </div>
+    <p><button class="btn" type="submit"><%= t('az.aggiungi') %></button></p>
+  </form>
+  <% if (!aziende.length) { %><p class="card"><%= t('az.vuoto') %></p><% } %>
+  <% aziende.forEach(a => { %>
+  <div class="card azienda">
+    <form method="post" action="<%= PAGINE.aziende[lingua] %>/<%= a.id %>">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="grid2">
+        <div><label for="n<%= a.id %>"><%= t('az.nome') %></label><input id="n<%= a.id %>" name="nome" required maxlength="120" value="<%= a.nome %>"></div>
+        <div><label for="p<%= a.id %>"><%= t('az.piva') %></label><input id="p<%= a.id %>" name="piva" maxlength="20" value="<%= a.piva || '' %>"></div>
+        <div><label for="i<%= a.id %>"><%= t('az.indirizzo') %></label><input id="i<%= a.id %>" name="indirizzo" maxlength="200" value="<%= a.indirizzo || '' %>"></div>
+        <div><label for="o<%= a.id %>"><%= t('az.note') %></label><input id="o<%= a.id %>" name="note" maxlength="500" value="<%= a.note || '' %>"></div>
+      </div>
+      <div class="azioni"><button class="btn small" type="submit"><%= t('az.salva') %></button>
+        <a class="btn ghost small" href="<%= PAGINE.area[lingua] %>?azienda=<%= a.id %>"><%= t('nav.area') %></a></div>
+    </form>
+    <form method="post" action="<%= PAGINE.aziende[lingua] %>/<%= a.id %>/elimina" data-conferma="<%= t('az.elimina.conf') %>" class="elimina"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="link" type="submit"><%= t('area.elimina') %></button></form>
+  </div>
+  <% }) %>
+</div>
+<script src="/assets/area.js?v=1" defer></script>
+<%- include('../partials/footer') %>

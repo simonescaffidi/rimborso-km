@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><%= titolo %></title>
 <meta name="description" content="<%= descrizione %>">
+<% if (typeof csrf !== 'undefined' && csrf) { %><meta name="csrf-token" content="<%= csrf %>"><% } %>
 <% if (noindex) { %><meta name="robots" content="noindex,nofollow"><% } %>
 <% if (gsc) { %><meta name="google-site-verification" content="<%= gsc %>"><% } %>
 <% const P = PAGINE[pagina]; if (P) { %>
@@ -35,6 +36,12 @@
       <a href="<%= PAGINE.home[lingua] %>" <%= pagina === 'home' ? 'aria-current=page' : '' %>><%= t('nav.calc') %></a>
       <a href="<%= PAGINE.aci[lingua] %>" <%= pagina === 'aci' ? 'aria-current=page' : '' %>><%= t('nav.aci') %></a>
       <a href="<%= PAGINE.manuale[lingua] %>" <%= pagina === 'manuale' ? 'aria-current=page' : '' %>><%= t('nav.manual') %></a>
+      <% if (typeof utente !== 'undefined' && utente) { %>
+        <a href="<%= PAGINE.area[lingua] %>" <%= ['area','aziende','account'].includes(pagina) ? 'aria-current=page' : '' %>><%= t('nav.area') %></a>
+        <form class="esci" method="post" action="/esci"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="lang" value="<%= lingua %>"><button type="submit"><%= t('nav.logout') %></button></form>
+      <% } else if (PAGINE.accedi) { %>
+        <a href="<%= PAGINE.accedi[lingua] %>" class="cta" <%= pagina === 'accedi' ? 'aria-current=page' : '' %>><%= t('nav.login') %></a>
+      <% } %>
       <% const alt = (PAGINE[pagina] || PAGINE.home)[lingua === 'it' ? 'en' : 'it']; %>
       <a class="lang" href="<%= alt %>" hreflang="<%= lingua === 'it' ? 'en' : 'it' %>" lang="<%= lingua === 'it' ? 'en' : 'it' %>"><%= lingua === 'it' ? 'EN' : 'IT' %></a>
     </nav>

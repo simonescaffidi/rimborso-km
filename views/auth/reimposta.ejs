@@ -1,0 +1,11 @@
+<%- include('../partials/head', { titolo: t('a.res.h1') + ' | Rimborso Km', descrizione: t('a.res.h1') }) %>
+<section class="hero small"><div class="wrap"><h1><%= t('a.res.h1') %></h1></div></section>
+<div class="wrap">
+  <form class="card auth" method="post" action="<%= PAGINE.reimposta[lingua] %>">
+    <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="token" value="<%= token %>">
+    <% if (errore) { %><p class="alert err" role="alert"><%= t('a.err.' + errore) %> <% if (errore === 'token_non_valido') { %><a href="<%= PAGINE.recupero[lingua] %>"><%= t('a.rec.btn') %></a><% } %></p><% } %>
+    <label for="password"><%= t('a.reg.pw') %></label><input id="password" name="password" type="password" required minlength="8" autocomplete="new-password">
+    <button class="btn" type="submit"><%= t('a.res.btn') %></button>
+  </form>
+</div>
+<%- include('../partials/footer') %>

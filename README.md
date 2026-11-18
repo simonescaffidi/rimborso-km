@@ -6,7 +6,8 @@ Calcolatore pubblico e gratuito della nota spese per chi usa l'auto propria per 
 - **Pedaggi autostradali** e distanze reali con Google Routes API (cache 30 giorni, tetto giornaliero)
 - **Prezzi carburante** medi nazionali dagli open data MIMIT, aggiornati ogni mattina
 - Spese extra (parcheggio, vitto, alloggio), andata/ritorno, più trasferte
-- Export **PDF** (pdfkit) ed **Excel** (exceljs); nessun dato utente salvato sul server
+- Export **PDF** (pdfkit) ed **Excel** (exceljs); senza account nessun dato salvato sul server
+- **Account facoltativo**: aziende/clienti, più note spese per azienda con salvataggio automatico, stati (bozza/inviata/rimborsata), storico e totali per azienda e anno, export e cancellazione dati (GDPR)
 - Sito IT/EN, SEO, cookie banner GDPR, GA4 dopo consenso
 
 ## Aggiornamento automatico

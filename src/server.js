@@ -14,6 +14,8 @@ const aci = require('./services/aci');
 const exp = require('./services/export');
 const jobs = require('./jobs');
 const fmt = require('./format');
+const auth = require('./auth');
+const creaAccount = require('./routes/account');
 
 const PROD = process.env.NODE_ENV === 'production';
 const PUBLIC_URL = (process.env.PUBLIC_URL || 'http://localhost:3000').replace(/\/$/, '');
@@ -44,6 +46,8 @@ app.use(helmet({
 app.use(express.json({ limit: '300kb' }));
 app.use('/assets', express.static(path.join(__dirname, '..', 'public', 'assets'), { maxAge: PROD ? '7d' : 0 }));
 app.get('/favicon.ico', (req, res) => res.redirect(301, '/assets/favicon.svg'));
+app.use(auth.sessione());
+app.use(auth.utenteCorrente);
 
 // ---------- pagine ----------
 const stato = async () => {
@@ -55,13 +59,17 @@ const stato = async () => {
 function render(res, vista, lingua, chiave, extra = {}) {
   const tt = (k, v) => t(lingua, k, v);
   res.render(vista, {
-    lingua, t: tt, pagina: chiave, PAGINE, PUBLIC_URL, fmt,
+    lingua, t: tt, pagina: chiave, PAGINE: { ...PAGINE, ...account.P }, PUBLIC_URL, fmt,
     ga4: process.env.GA4_ID || '', gsc: process.env.GSC_VERIFICATION || '',
     noindex: process.env.NOINDEX === '1',
     i18nClient: JSON.stringify(D[lingua]).replace(/</g, '\\u003c'),
     ...extra,
   });
 }
+
+const account = creaAccount((res, vista, lingua, chiave, extra = {}) => render(res, vista, lingua, chiave, { noindex: true, ...extra }));
+app.use(account.router);
+app.use('/api/u', account.api);
 
 for (const lingua of ['it', 'en']) {
   app.get(PAGINE.home[lingua], async (req, res) => render(res, 'home', lingua, 'home', { st: await stato() }));
@@ -79,7 +87,7 @@ for (const lingua of ['it', 'en']) {
 }
 app.get('/en', (req, res) => res.redirect(301, '/en/'));
 
-app.get('/robots.txt', (req, res) => res.type('text/plain').send(process.env.NOINDEX === '1' ? 'User-agent: *\nDisallow: /\n' : `User-agent: *\nDisallow: /api/\nDisallow: /admin/\nSitemap: ${PUBLIC_URL}/sitemap.xml\n`));
+app.get('/robots.txt', (req, res) => res.type('text/plain').send(process.env.NOINDEX === '1' ? 'User-agent: *\nDisallow: /\n' : `User-agent: *\nDisallow: /api/\nDisallow: /admin/\nDisallow: /area\nDisallow: /en/area\nSitemap: ${PUBLIC_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', (req, res) => {
   const urls = Object.values(PAGINE).map((p) => `<url><loc>${PUBLIC_URL}${p.it}</loc><xhtml:link rel="alternate" hreflang="it" href="${PUBLIC_URL}${p.it}"/><xhtml:link rel="alternate" hreflang="en" href="${PUBLIC_URL}${p.en}"/></url><url><loc>${PUBLIC_URL}${p.en}</loc><xhtml:link rel="alternate" hreflang="it" href="${PUBLIC_URL}${p.it}"/><xhtml:link rel="alternate" hreflang="en" href="${PUBLIC_URL}${p.en}"/></url>`).join('');
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${urls}</urlset>`);

@@ -17,10 +17,13 @@
   "author": "Simone Scaffidi Domianello <info@simonescaffidi.it>",
   "license": "UNLICENSED",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "connect-pg-simple": "^10.0.0",
     "ejs": "^7.0.2",
     "exceljs": "^4.4.0",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.4",
+    "express-session": "^1.19.0",
     "helmet": "^8.3.0",
     "node-cron": "^4.6.0",
     "pdfkit": "^0.20.2",

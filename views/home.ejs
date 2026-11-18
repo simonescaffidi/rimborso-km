@@ -3,7 +3,7 @@
    const fuelMap = Object.fromEntries((st.fuel || []).map(f => [f.carburante, f]));
    const fuelData = st.fuel && st.fuel[0] ? fmt.data(st.fuel[0].giorno) : null; %>
 <script type="application/json" id="i18n"><%- i18nClient %></script>
-<script type="application/json" id="stato"><%- JSON.stringify({ fuel: fuelMap, routes: st.routes, anno: st.anno }).replace(/</g, '\\u003c') %></script>
+<script type="application/json" id="stato"><%- JSON.stringify({ fuel: fuelMap, routes: st.routes, anno: st.anno, utente: !!utente, area: PAGINE.area[lingua], accedi: PAGINE.accedi[lingua], registrati: PAGINE.registrati[lingua] }).replace(/</g, '\\u003c') %></script>
 
 <section class="hero">
   <div class="wrap">
@@ -17,6 +17,14 @@
   </div>
 </section>
 
+<% if (utente) { %>
+<div class="wrap notabar" id="notabar" hidden>
+  <div class="nb-campo"><label for="nb-titolo"><%= t('n.bar.nota') %></label><input id="nb-titolo" maxlength="120"></div>
+  <div class="nb-campo"><label for="nb-az"><%= t('area.azienda') %></label><select id="nb-az"><option value=""><%= t('area.nessuna') %></option></select></div>
+  <span class="nb-stato" id="nb-stato" role="status" aria-live="polite"></span>
+  <a class="btn ghost small" href="<%= PAGINE.area[lingua] %>">← <%= t('n.bar.tutte') %></a>
+</div>
+<% } %>
 <div class="wrap calc" id="calc">
   <section class="card" aria-labelledby="s1">
     <h2 id="s1"><span class="n">1</span><%= t('step1') %></h2>
@@ -101,6 +109,18 @@
       <button type="button" class="btn ghost" id="reset"><%= t('exp.reset') %></button>
     </div>
     <p class="hint" id="msg" role="status" aria-live="polite"></p>
+    <% if (utente) { %>
+    <div class="salva-nota" id="salva-nota">
+      <h3><%= t('n.salva.h') %></h3>
+      <div class="grid2">
+        <div><label for="sn-titolo"><%= t('area.titolo') %></label><input id="sn-titolo" maxlength="120" placeholder="<%= t('area.titolo.ph') %>"></div>
+        <div><label for="sn-az"><%= t('area.azienda') %></label><select id="sn-az"><option value=""><%= t('area.nessuna') %></option></select></div>
+      </div>
+      <button type="button" class="btn alt" id="sn-btn"><%= t('n.salva.btn') %></button>
+    </div>
+    <% } else { %>
+    <p class="hint salva-login"><%= t('n.salva.login') %> <a href="<%= PAGINE.accedi[lingua] %>"><%= t('nav.login') %></a> · <a href="<%= PAGINE.registrati[lingua] %>"><%= t('a.crea') %></a></p>
+    <% } %>
   </section>
 </div>
 
@@ -111,13 +131,15 @@
     ['Le tabelle ACI si aggiornano da sole?', 'Sì. Ogni anno l\'ACI pubblica le nuove tabelle in Gazzetta Ufficiale a dicembre: il sistema controlla ogni giorno il sito ufficiale e importa i nuovi valori appena disponibili. I prezzi dei carburanti si aggiornano ogni mattina dagli open data del Ministero (MIMIT).'],
     ['Come vengono calcolati i pedaggi autostradali?', 'Il percorso tra partenza e arrivo viene calcolato con Google Maps, che stima il pedaggio reale in base ai caselli attraversati e al tipo di alimentazione. Puoi sempre correggere l\'importo a mano con quello della ricevuta o dell\'estratto Telepass.'],
     ['Il rimborso chilometrico è tassato?', 'Per i dipendenti in trasferta fuori dal comune della sede di lavoro, il rimborso calcolato con le tabelle ACI non concorre a formare il reddito (art. 51 TUIR), purché documentato. Verifica sempre il caso specifico con il consulente del lavoro o l\'ufficio paghe.'],
-    ['I miei dati vengono salvati?', 'No. Le trasferte restano solo nel tuo browser; il server elabora i dati per creare il PDF o l\'Excel e non li conserva.'],
+    ['I miei dati vengono salvati?', 'Senza account no: le trasferte restano solo nel tuo browser e il server le elabora soltanto per creare il PDF o l\'Excel. Se ti registri (gratis) puoi salvare più note spese, assegnarle alle aziende per cui lavori e consultare lo storico; puoi scaricare o cancellare i tuoi dati in qualsiasi momento.'],
+    ['Posso gestire note spese per aziende diverse?', 'Sì. Con l\'account crei l\'elenco delle aziende o dei clienti e assegni ogni nota spese a una di esse. Nell\'area personale filtri per azienda, anno e stato (bozza, inviata, rimborsata) e vedi i totali annui per ciascuna azienda.'],
   ] : [
     ['How is mileage reimbursement calculated with ACI tables?', 'Multiply the ACI cost per km of your model (15,000 km per year) by the business kilometres driven. The calculator finds the cost by make and model and applies it to each trip, including return trips.'],
     ['Do the ACI tables update automatically?', 'Yes. ACI publishes new tables every December in the Italian Official Gazette: the system checks the official website daily and imports the new values as soon as they are available. Fuel prices update every morning from Ministry (MIMIT) open data.'],
     ['How are motorway tolls calculated?', 'The route is calculated with Google Maps, which estimates the actual toll based on the toll booths crossed and the fuel type. You can always override it with the amount on your receipt or Telepass statement.'],
     ['Is mileage reimbursement taxed?', 'For Italian employees travelling outside the municipality of their workplace, reimbursement based on ACI tables is not taxable income (art. 51 TUIR) if documented. Always check your specific case with your payroll office.'],
-    ['Is my data stored?', 'No. Your trips stay in your browser only; the server processes the data to create the PDF or Excel file and does not keep it.'],
+    ['Is my data stored?', 'Not without an account: trips stay in your browser and the server only processes them to create the PDF or Excel file. If you sign up (free) you can save multiple expense reports, assign them to the companies you work for and browse the history; you can download or delete your data at any time.'],
+    ['Can I manage expense reports for different companies?', 'Yes. With an account you create your list of companies or clients and assign each expense report to one of them. In your personal area you filter by company, year and status (draft, submitted, reimbursed) and see yearly totals per company.'],
   ]; %>
   <% faq.forEach(([q, a]) => { %><details><summary><%= q %></summary><p><%= a %></p></details><% }) %>
   <script type="application/ld+json"><%- JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }).replace(/</g, '\\u003c') %></script>
