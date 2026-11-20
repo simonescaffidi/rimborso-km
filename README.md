@@ -3,7 +3,7 @@
 Calcolatore pubblico e gratuito della nota spese per chi usa l'auto propria per lavoro.
 
 - **Tabelle ACI** ufficiali (costo €/km a 15.000 km annui) per marca e modello, importate in automatico da aci.gov.it
-- **Pedaggi autostradali** e distanze reali con Google Routes API (cache 30 giorni, tetto giornaliero)
+- **Distanze reali** con Google Routes API (cache 30 giorni, tetto giornaliero). Pedaggi inseriti a mano: Google non ha i prezzi dei pedaggi italiani
 - **Prezzi carburante** medi nazionali dagli open data MIMIT, aggiornati ogni mattina
 - Spese extra (parcheggio, vitto, alloggio), andata/ritorno, più trasferte
 - Export **PDF** (pdfkit) ed **Excel** (exceljs); senza account nessun dato salvato sul server
@@ -15,7 +15,7 @@ Calcolatore pubblico e gratuito della nota spese per chi usa l'auto propria per 
 |---|---|---|
 | Tabelle ACI | `jobAci` | ogni giorno 6:10; da novembre cerca anche l'anno successivo; alert se a fine gennaio l'anno in corso manca |
 | Carburanti | `jobCarburanti` | ogni giorno 9:15 (MIMIT pubblica alle 8); alert se i dati superano 3 giorni |
-| Pedaggi | live | a ogni calcolo (Google) |
+| Km percorso | live | a ogni calcolo (Google) |
 
 Fallback ACI se cambiano i percorsi dei file: `POST /admin/aci/:anno/:tabella` con il file xlsx come body (header `X-Admin-Token`).
 

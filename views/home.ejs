@@ -84,7 +84,7 @@
     <h2 id="s2"><span class="n">2</span><%= t('step2') %></h2>
     <div id="trasferte"></div>
     <button type="button" class="btn ghost" id="add">+ <%= t('t.add') %></button>
-    <% if (!st.routes) { %><p class="hint warn" id="no-routes"><%= it ? 'Calcolo automatico del percorso momentaneamente non disponibile: inserisci km e pedaggio a mano.' : 'Automatic route calculation temporarily unavailable: enter km and toll manually.' %></p><% } %>
+    <% if (!st.routes) { %><p class="hint warn" id="no-routes"><%= it ? 'Calcolo automatico del percorso momentaneamente non disponibile: inserisci i km a mano.' : 'Automatic route calculation temporarily unavailable: enter km manually.' %></p><% } %>
   </section>
 
   <section class="card riepilogo" aria-labelledby="s3">
@@ -129,14 +129,14 @@
   <% const faq = it ? [
     ['Come si calcola il rimborso chilometrico con le tabelle ACI?', 'Si moltiplica il costo chilometrico ACI del proprio modello (percorrenza di 15.000 km annui) per i km percorsi per lavoro. Il calcolatore trova il costo per marca e modello e lo applica a ogni trasferta, andata e ritorno compresi.'],
     ['Le tabelle ACI si aggiornano da sole?', 'Sì. Ogni anno l\'ACI pubblica le nuove tabelle in Gazzetta Ufficiale a dicembre: il sistema controlla ogni giorno il sito ufficiale e importa i nuovi valori appena disponibili. I prezzi dei carburanti si aggiornano ogni mattina dagli open data del Ministero (MIMIT).'],
-    ['Come vengono calcolati i pedaggi autostradali?', 'Il percorso tra partenza e arrivo viene calcolato con Google Maps, che stima il pedaggio reale in base ai caselli attraversati e al tipo di alimentazione. Puoi sempre correggere l\'importo a mano con quello della ricevuta o dell\'estratto Telepass.'],
+    ['Come si inseriscono i pedaggi autostradali?', 'I km tra partenza e arrivo vengono calcolati con Google Maps sul percorso più rapido. Il pedaggio si inserisce a mano con l\'importo della ricevuta o dell\'estratto Telepass: andata e ritorno lo raddoppia in automatico.'],
     ['Il rimborso chilometrico è tassato?', 'Per i dipendenti in trasferta fuori dal comune della sede di lavoro, il rimborso calcolato con le tabelle ACI non concorre a formare il reddito (art. 51 TUIR), purché documentato. Verifica sempre il caso specifico con il consulente del lavoro o l\'ufficio paghe.'],
     ['I miei dati vengono salvati?', 'Senza account no: le trasferte restano solo nel tuo browser e il server le elabora soltanto per creare il PDF o l\'Excel. Se ti registri (gratis) puoi salvare più note spese, assegnarle alle aziende per cui lavori e consultare lo storico; puoi scaricare o cancellare i tuoi dati in qualsiasi momento.'],
     ['Posso gestire note spese per aziende diverse?', 'Sì. Con l\'account crei l\'elenco delle aziende o dei clienti e assegni ogni nota spese a una di esse. Nell\'area personale filtri per azienda, anno e stato (bozza, inviata, rimborsata) e vedi i totali annui per ciascuna azienda.'],
   ] : [
     ['How is mileage reimbursement calculated with ACI tables?', 'Multiply the ACI cost per km of your model (15,000 km per year) by the business kilometres driven. The calculator finds the cost by make and model and applies it to each trip, including return trips.'],
     ['Do the ACI tables update automatically?', 'Yes. ACI publishes new tables every December in the Italian Official Gazette: the system checks the official website daily and imports the new values as soon as they are available. Fuel prices update every morning from Ministry (MIMIT) open data.'],
-    ['How are motorway tolls calculated?', 'The route is calculated with Google Maps, which estimates the actual toll based on the toll booths crossed and the fuel type. You can always override it with the amount on your receipt or Telepass statement.'],
+    ['How do I enter motorway tolls?', 'Km between origin and destination are calculated with Google Maps on the fastest route. Enter the toll manually from your receipt or Telepass statement: a return trip doubles it automatically.'],
     ['Is mileage reimbursement taxed?', 'For Italian employees travelling outside the municipality of their workplace, reimbursement based on ACI tables is not taxable income (art. 51 TUIR) if documented. Always check your specific case with your payroll office.'],
     ['Is my data stored?', 'Not without an account: trips stay in your browser and the server only processes them to create the PDF or Excel file. If you sign up (free) you can save multiple expense reports, assign them to the companies you work for and browse the history; you can download or delete your data at any time.'],
     ['Can I manage expense reports for different companies?', 'Yes. With an account you create your list of companies or clients and assign each expense report to one of them. In your personal area you filter by company, year and status (draft, submitted, reimbursed) and see yearly totals per company.'],

@@ -1,9 +1,8 @@
-// Distanza e pedaggi via Google Routes API (computeRoutes con extraComputations TOLLS).
+// Distanza via Google Routes API (computeRoutes, SKU Essentials). Pedaggi: Google non li copre per l'Italia.
 // Cache 30 giorni su DB e tetto giornaliero di chiamate (ROUTES_MAX_GIORNO) per restare nella quota gratuita.
 const crypto = require('crypto');
 const db = require('../db');
 
-const EMISSIONI = { benzina: 'GASOLINE', gasolio: 'DIESEL', 'ibrida-benzina': 'HYBRID', 'ibrida-gasolio': 'HYBRID', 'plug-in': 'HYBRID', elettrica: 'ELECTRIC', 'gpl-metano': 'GASOLINE' };
 const MAX_GIORNO = Number(process.env.ROUTES_MAX_GIORNO || 40);
 let contatore = { giorno: '', n: 0 };
 
@@ -13,7 +12,6 @@ const configurato = () => !!process.env.GOOGLE_MAPS_API_KEY;
 
 function chiave(p) { return crypto.createHash('sha256').update(JSON.stringify(p)).digest('hex'); }
 
-const euro = (m) => (m ? Number(m.units || 0) + Number(m.nanos || 0) / 1e9 : 0);
 
 async function calcola({ partenza, arrivo, tappe = [], alimentazione = 'benzina', evitaAutostrade = false }) {
   if (!configurato()) throw new PercorsoErrore('non_configurato', 'calcolo percorso non attivo');
@@ -33,8 +31,8 @@ async function calcola({ partenza, arrivo, tappe = [], alimentazione = 'benzina'
     intermediates: tappe.filter(Boolean).map((address) => ({ address })),
     travelMode: 'DRIVE',
     routingPreference: 'TRAFFIC_UNAWARE',
-    extraComputations: ['TOLLS'],
-    routeModifiers: { avoidTolls: !!evitaAutostrade, avoidHighways: !!evitaAutostrade, vehicleInfo: { emissionType: EMISSIONI[alimentazione] || 'GASOLINE' } },
+    // niente extraComputations TOLLS: Google non ha i prezzi dei pedaggi italiani e lo SKU costa di più
+    routeModifiers: { avoidTolls: !!evitaAutostrade, avoidHighways: !!evitaAutostrade },
     languageCode: 'it-IT', regionCode: 'IT', units: 'METRIC',
   };
   const r = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
@@ -42,7 +40,7 @@ async function calcola({ partenza, arrivo, tappe = [], alimentazione = 'benzina'
     headers: {
       'Content-Type': 'application/json',
       'X-Goog-Api-Key': process.env.GOOGLE_MAPS_API_KEY,
-      'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration,routes.travelAdvisory.tollInfo,routes.legs.startLocation,routes.legs.endLocation',
+      'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration',
     },
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(20000),
@@ -55,15 +53,13 @@ async function calcola({ partenza, arrivo, tappe = [], alimentazione = 'benzina'
   }
   const route = j.routes?.[0];
   if (!route) throw new PercorsoErrore('indirizzo', 'percorso non trovato');
-  const toll = route.travelAdvisory?.tollInfo;
-  const prezzi = toll?.estimatedPrice || [];
-  const eur = prezzi.find((x) => x.currencyCode === 'EUR');
+  // il pedaggio resta manuale (ricevuta o estratto Telepass)
   const risposta = {
     km: Math.round((route.distanceMeters || 0) / 100) / 10,
     durataMin: Math.round(parseInt(route.duration || '0', 10) / 60),
-    pedaggio: eur ? Math.round(euro(eur) * 100) / 100 : 0,
-    pedaggioNoto: !!toll && (!prezzi.length || !!eur), // tollInfo presente ma senza prezzo = pedaggio non stimabile
-    conPedaggi: !!toll,
+    pedaggio: 0,
+    pedaggioNoto: false,
+    conPedaggi: false,
   };
   await db.query('INSERT INTO percorsi_cache (chiave,risposta) VALUES ($1,$2) ON CONFLICT (chiave) DO UPDATE SET risposta=EXCLUDED.risposta, created_at=now()', [k, risposta]);
   return risposta;
